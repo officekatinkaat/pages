@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Katinka Tierfotos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+      padding: 2rem;
+      margin: 0;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .upload-section {
+      max-width: 500px;
+      background: white;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .photo-card {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .photo-card img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .photo-card img:hover {
+      transform: scale(1.02);
+    }
+
+    .like-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #ff5c5c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .like-count {
+      display: block;
+      margin-top: 0.4rem;
+      color: #555;
+    }
+
+    /* Modal-Vollbild */
+    #modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #modal img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 8px;
+    }
+
+    #modal.close {
+      cursor: pointer;
+    }
+              /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+            width: 100%;
+            margin-top: 4rem;
+            
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #ff9a9e;
+        }
+
+        .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: #ff9a9e;
+        }
+  </style>
+</head>
+<body>
+
+  <h1>🐾 Tierfotos der Katinka-Community 🐾</h1>
+
+  <div class="upload-section">
+    <h2>Foto hochladen</h2>
+    <input type="file" id="photoInput" accept="image/*">
+    <br><br>
+    <button onclick="uploadPhoto()">📸 Hochladen</button>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+
+  <!-- Modal für Vollbild -->
+  <div id="modal" onclick="closeModal()">
+    <img id="modal-img" src="">
+  </div>
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-section">
+      <h3>Kundenservice</h3>
+      <a href="kontakt.html">Kontakt</a>
+      <a href="versand.html">Versand & Rückgabe</a>
+      <a href="fuetterungsberatung.html">Bewertungen</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+    <div class="footer-section">
+      <h3>Über Katinka</h3>
+      <a href="mission.html">Unsere Ziele</a>
+      <a href="qualitaet.html">Qualitätsversprechen</a>
+      <a href="nachhaltigkeit.html">Nachhaltigkeit</a>
+      <a href="team.html">Tierärzte-Team</a>
+    </div>
+    <div class="footer-section">
+      <h3>Rechtliches</h3>
+      <a href="agb.html">AGB</a>
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+      <a href="widerrufsrecht.html">Widerrufsrecht</a>
+    </div>
+    <div class="footer-section">
+      <h3>Community</h3>
+      <a href="https://www.instagram.com/katinka.katzenfutter/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <a href="https://www.facebook.com/profile.php?id=61578572415434" target="_blank" rel="noopener noreferrer">Facebook</a>
+      <a href="tierfotos.html">Tierfotos teilen</a>
+      <a href="news.html">Newsletter</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © 2025 Katinka Tierfutter. Alle Rechte vorbehalten. 🐾
+  </div>
+</footer>
+  <script>
+    let photos = JSON.parse(localStorage.getItem("katinka_photos") || "[]");
+    let likedPhotos = JSON.parse(localStorage.getItem("katinka_liked") || "{}");
+
+    function uploadPhoto() {
+      const input = document.getElementById("photoInput");
+      const file = input.files[0];
+      if (!file) return alert("Bitte wähle ein Bild aus.");
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const id = Date.now().toString(); // eindeutige ID
+        const newPhoto = {
+          id: id,
+          src: e.target.result,
+          likes: 0
+        };
+        photos.push(newPhoto);
+        localStorage.setItem("katinka_photos", JSON.stringify(photos));
+        input.value = "";
+        displayPhotos();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function toggleLike(photoId) {
+      const liked = likedPhotos[photoId];
+      const photo = photos.find(p => p.id === photoId);
+      if (!photo) return;
+
+      if (liked) {
+        photo.likes--;
+        delete likedPhotos[photoId];
+      } else {
+        photo.likes++;
+        likedPhotos[photoId] = true;
+      }
+
+      localStorage.setItem("katinka_photos", JSON.stringify(photos));
+      localStorage.setItem("katinka_liked", JSON.stringify(likedPhotos));
+      displayPhotos();
+    }
+
+    function displayPhotos() {
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      photos.forEach(photo => {
+        const card = document.createElement("div");
+        card.className = "photo-card";
+        const isLiked = likedPhotos[photo.id];
+
+        card.innerHTML = `
+          <img src="${photo.src}" alt="Tierbild" onclick="openModal('${photo.src}')">
+          <button class="like-btn" onclick="toggleLike('${photo.id}')">
+            ${isLiked ? "💔 Entliken" : "❤️ Liken"}
+          </button>
+          <span class="like-count">${photo.likes} Like(s)</span>
+        `;
+
+        gallery.appendChild(card);
+      });
+    }
+
+    function openModal(imgSrc) {
+      const modal = document.getElementById("modal");
+      document.getElementById("modal-img").src = imgSrc;
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+    window.onload = displayPhotos;
+  </script>
+</body>
+</html>
